@@ -1,0 +1,23 @@
+{
+  "name": "spotify_player",
+  "version": "1.0.0",
+  "description": "A web player for Spotify",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon --exec babel-node --presets env,stage-2 src/app.js"
+  },
+  "author": "Stephen Gladney",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "dotenv": "^6.2.0",
+    "express": "^4.16.4"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-stage-2": "^6.24.1",
+    "nodemon": "^1.18.9"
+  }
+}
