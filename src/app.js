@@ -1,19 +1,16 @@
 require("dotenv").config();
 const pg = require("pg");
 const colors = require("colors");
-// const wednesday = require("../../frontend/src/wednesday");
 const weather = require("./weather");
 const spotify = require("./spotify");
 const express = require("express");
 const querystring = require("querystring");
-const request = require("request");
 const bodyParser = require("body-parser");
 const db = require("../models");
 const sequelize = require("../config/sequelize");
 const app = express();
 const spotify_redirect_uri = process.env.SPOTIFY_REDIRECT_URI;
 const spotify_client_id = process.env.SPOTIFY_CLIENT_ID;
-const spotify_client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -47,26 +44,23 @@ app
         })
     );
   })
-  .get("/api/spotify/token/new", (req, res) => {
-    spotify
-      .getNewToken()
-      .then(response => {
-        res.send(String(response.data.access_token));
-      })
-      .catch(err => {
-        res.send("Error: " + err.code);
-      });
-  })
   .get("/api/spotify/player/state", (req, res) => {
-    spotify.player
-      .getState()
-      .then(response => res.send(response.data))
-      .catch(error => res.send(String(error)));
+    spotify.getNewToken().then(response => {
+      spotify.player
+        .getState(response.data.access_token)
+        .then(response => res.send(response.data))
+        .catch(error => res.send(String(error)));
+    });
   })
   .get("/api/spotify/player/:action", (req, res) => {
-    spotify.player.actions[req.params.action](req.query.state)
-      .then(response => res.send(""))
-      .catch(error => res.send(String(error.code)));
+    spotify.getNewToken().then(response => {
+      spotify.player.actions[req.params.action](
+        response.data.access_token,
+        req.query.value
+      )
+        .then(response => res.send("success"))
+        .catch(error => res.send(String(error.code)));
+    });
   })
   .get("/spotify", (req, res) => {
     spotify

@@ -3,13 +3,16 @@ module.exports = {
   getNewToken: getNewToken,
   player: {
     actions: {
-      play: () => playerAction("play"),
-      pause: () => playerAction("pause"),
-      previous: () => playerAction("previous"),
-      next: () => playerAction("next"),
-      shuffle: desiredValue => playerAction("shuffle", desiredValue)
+      play: token => playerAction(token, "play"),
+      pause: token => playerAction(token, "pause"),
+      previous: token => playerAction(token, "previous"),
+      next: token => playerAction(token, "next"),
+      shuffle: (token, desiredValue) =>
+        playerAction(token, "shuffle", desiredValue),
+      volume: (token, desiredValue) =>
+        playerAction(token, "volume", desiredValue)
     },
-    getState: () => getPlayerState()
+    getState: token => getPlayerState(token)
   }
 };
 
@@ -19,9 +22,9 @@ const client_id = process.env.SPOTIFY_CLIENT_ID;
 const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 const redirect_uri = process.env.SPOTIFY_REDIRECT_URI;
 const refreshToken = process.env.SPOTIFY_REFRESH_TOKEN;
-const token = "";
+let token = "";
 
-function playerAction(action, desiredValue) {
+function playerAction(token, action, desiredValue) {
   var method;
   var params = {};
   switch (action) {
@@ -37,8 +40,14 @@ function playerAction(action, desiredValue) {
       break;
     case "next":
       method = "post";
+      break;
     case "previous":
       method = "post";
+      break;
+    case "volume":
+      method = "put";
+      params = { volume_percent: desiredValue };
+      break;
     default:
       method = "put";
   }
@@ -88,7 +97,7 @@ function getNewToken() {
   });
 }
 
-function getPlayerState() {
+function getPlayerState(token) {
   return axios({
     method: "get",
     url: "https://api.spotify.com/v1/me/player",
