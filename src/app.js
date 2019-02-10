@@ -11,8 +11,12 @@ const bodyParser = require("body-parser");
 const db = require("../models");
 const sequelize = require("../config/sequelize");
 const app = express();
+const tesla = require("./tesla");
 const spotify_redirect_uri = process.env.SPOTIFY_REDIRECT_URI;
 const spotify_client_id = process.env.SPOTIFY_CLIENT_ID;
+const tesla_vehicle_id = process.env.TESLA_VEHICLE_ID;
+const tesla_access_token = process.env.TESLA_ACCESS_TOKEN;
+const tesla_user_agent = process.env.TESLA_USER_AGENT;
 
 app.use(favicon(__dirname + "/build/favicon.ico"));
 app.use(express.static(__dirname));
@@ -31,11 +35,16 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // );
 
 app
-  .get("/", (req, res) =>
-    res.sendFile(path.join(__dirname, "build", "index.html"))
-  )
 
-  //API
+  //API\
+  .get("/api/tesla/state/drive", (req, res) => {
+    tesla.state
+      .drive(tesla_access_token, tesla_user_agent, tesla_vehicle_id)
+      .then(response => {
+        res.send(response.data);
+      })
+      .catch(error => res.send(String(error)));
+  })
   .get("/api/spotify/authorize", (req, res) => {
     var permissions =
       "user-modify-playback-state user-read-currently-playing user-read-playback-state user-read-recently-played user-library-read playlist-read-private";
@@ -98,7 +107,9 @@ app
       })
       .catch(e => console.log(e));
   })
-  .get("/test", (req, res) => res.send(wednesday.abbreviateWeekday("Thursday")))
+  .get("/*", (req, res) =>
+    res.sendFile(path.join(__dirname, "build", "index.html"))
+  )
 
   .listen(process.env.PORT || 5000, process.env.IP, () => {
     console.log("Wednesday server is now running!");
