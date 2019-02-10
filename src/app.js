@@ -77,7 +77,7 @@ app
         .catch(error => res.send(String(error.code)));
     });
   })
-  .get("/spotify", (req, res) => {
+  .get("/spotifyauth", (req, res) => {
     spotify
       .getInitialToken(req.query.code)
       .then(response => {
