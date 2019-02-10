@@ -4,6 +4,7 @@ const colors = require("colors");
 const weather = require("./weather");
 const spotify = require("./spotify");
 const express = require("express");
+const path = require("path");
 const querystring = require("querystring");
 const bodyParser = require("body-parser");
 const db = require("../models");
@@ -11,6 +12,9 @@ const sequelize = require("../config/sequelize");
 const app = express();
 const spotify_redirect_uri = process.env.SPOTIFY_REDIRECT_URI;
 const spotify_client_id = process.env.SPOTIFY_CLIENT_ID;
+
+app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, "build")));
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -26,7 +30,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app
   .get("/", (req, res) =>
-    res.sendFile("frontend/public/index.html", { root: "../../" })
+    res.sendFile(path.join(__dirname, "build", "index.html"))
   )
 
   //API
