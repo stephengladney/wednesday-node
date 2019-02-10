@@ -41,7 +41,7 @@ app
     tesla.state
       .drive(tesla_access_token, tesla_user_agent, tesla_vehicle_id)
       .then(response => {
-        res.send(response.data);
+        res.send(JSON.stringify(response.data));
       })
       .catch(error => res.send(String(error)));
   })
