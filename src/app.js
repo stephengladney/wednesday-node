@@ -4,6 +4,7 @@ const colors = require("colors");
 const weather = require("./weather");
 const spotify = require("./spotify");
 const express = require("express");
+const favicon = require("express-favicon");
 const path = require("path");
 const querystring = require("querystring");
 const bodyParser = require("body-parser");
@@ -13,6 +14,7 @@ const app = express();
 const spotify_redirect_uri = process.env.SPOTIFY_REDIRECT_URI;
 const spotify_client_id = process.env.SPOTIFY_CLIENT_ID;
 
+app.use(favicon(__dirname + "/build/favicon.ico"));
 app.use(express.static(__dirname));
 app.use(express.static(path.join(__dirname, "build")));
 
