@@ -60,12 +60,16 @@ app
     );
   })
   .get("/api/spotify/player/state", (req, res) => {
-    spotify.getNewToken().then(response => {
-      spotify.player
-        .getState(response.data.access_token)
-        .then(response => res.send(response.data))
-        .catch(error => res.send(String(error)));
-    });
+    spotify
+      .getNewToken()
+      .then(response => {
+        console.log(response.data.access_token);
+        spotify.player
+          .getState(response.data.access_token)
+          .then(response => res.send(response.data))
+          .catch(error => res.send(String(error)));
+      })
+      .catch(error => res.send(error));
   })
   .get("/api/spotify/player/:action", (req, res) => {
     spotify.getNewToken().then(response => {
