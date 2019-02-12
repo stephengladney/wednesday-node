@@ -59,17 +59,28 @@ app
         })
     );
   })
+  .get("/api/spotify/player/song/isinlibrary/:id", (req, res) => {
+    spotify.getNewToken().then(response => {
+      spotify.player
+        .isSongInLibrary(response.data.access_token, req.params.id)
+        .then(response => res.status(200).send(response.data[0]))
+        .catch(error => res.status(500).send(error));
+    });
+  })
   .get("/api/spotify/player/state", (req, res) => {
     spotify
       .getNewToken()
       .then(response => {
-        console.log(response.data.access_token);
         spotify.player
           .getState(response.data.access_token)
-          .then(response => res.send(response.data))
-          .catch(error => res.send(String(error)));
+          .then(response => res.status(200).send(response.data))
+          .catch(error =>
+            res.status(500).send("Error getting Spotify state: " + error)
+          );
       })
-      .catch(error => res.send(error));
+      .catch(error =>
+        res.status(500).send("Error getting new Spotify token: " + error)
+      );
   })
   .get("/api/spotify/player/:action", (req, res) => {
     spotify.getNewToken().then(response => {

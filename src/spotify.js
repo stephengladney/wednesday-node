@@ -12,7 +12,8 @@ module.exports = {
       volume: (token, desiredValue) =>
         playerAction(token, "volume", desiredValue)
     },
-    getState: token => getPlayerState(token)
+    getState: token => getPlayerState(token),
+    isSongInLibrary: (token, songId) => isSongInLibrary(token, songId)
   }
 };
 
@@ -24,6 +25,16 @@ const redirect_uri = process.env.SPOTIFY_REDIRECT_URI;
 const refreshToken = process.env.SPOTIFY_REFRESH_TOKEN;
 let token = "";
 
+function isSongInLibrary(token, songId) {
+  return axios({
+    method: "get",
+    url: `https://api.spotify.com/v1/me/tracks/contains`,
+    params: { ids: songId },
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+}
 function playerAction(token, action, desiredValue) {
   var method;
   var params = {};
