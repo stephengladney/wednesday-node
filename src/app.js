@@ -60,12 +60,10 @@ app
     );
   })
   .get("/api/spotify/library", (req, res) => {
-    console.log("library request");
     spotify.getNewToken().then(response => {
       spotify
         .getLibrary(response.data.access_token, req.query.offset)
         .then(response => {
-          console.log("library received");
           res.status(200).send(response.data);
         })
         .catch(error => res.status(500).send(error));
