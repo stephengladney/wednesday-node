@@ -59,6 +59,18 @@ app
         })
     );
   })
+  .get("/api/spotify/library", (req, res) => {
+    console.log("library request");
+    spotify.getNewToken().then(response => {
+      spotify
+        .getLibrary(response.data.access_token, req.query.offset)
+        .then(response => {
+          console.log("library received");
+          res.status(200).send(response.data);
+        })
+        .catch(error => res.status(500).send(error));
+    });
+  })
   .get("/api/spotify/player/song/isinlibrary/:id", (req, res) => {
     spotify.getNewToken().then(response => {
       spotify.player
@@ -88,8 +100,11 @@ app
         response.data.access_token,
         req.query.value
       )
-        .then(response => res.send("success"))
-        .catch(error => res.send(String(error.code)));
+        .then(response => {
+          console.log(response);
+          res.send("success");
+        })
+        .catch(error => console.log(error));
     });
   })
   .get("/spotifyauth", (req, res) => {

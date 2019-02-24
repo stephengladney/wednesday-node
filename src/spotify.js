@@ -3,7 +3,7 @@ module.exports = {
   getNewToken: getNewToken,
   player: {
     actions: {
-      play: token => playerAction(token, "play"),
+      play: (token, uri) => playerAction(token, "play", uri),
       pause: token => playerAction(token, "pause"),
       previous: token => playerAction(token, "previous"),
       next: token => playerAction(token, "next"),
@@ -14,11 +14,13 @@ module.exports = {
     },
     getState: token => getPlayerState(token),
     isSongInLibrary: (token, songId) => isSongInLibrary(token, songId)
-  }
+  },
+  getLibrary: (token, offset) => getLibrary(token, offset)
 };
 
 require("dotenv").config();
 const axios = require("axios");
+const qs = require("qs");
 const client_id = process.env.SPOTIFY_CLIENT_ID;
 const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 const redirect_uri = process.env.SPOTIFY_REDIRECT_URI;
@@ -35,9 +37,26 @@ function isSongInLibrary(token, songId) {
     }
   });
 }
+
+function getLibrary(token, offset) {
+  offset = offset || 0;
+  return axios({
+    method: "get",
+    url: `https://api.spotify.com/v1/me/tracks`,
+    params: {
+      offset: offset,
+      limit: 50
+    },
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+}
+
 function playerAction(token, action, desiredValue) {
   var method;
   var params = {};
+  var data = {};
   switch (action) {
     case "next":
       method = "post";
@@ -49,24 +68,32 @@ function playerAction(token, action, desiredValue) {
       method = "put";
       params = { state: desiredValue };
       break;
-    case "next":
-      method = "post";
-      break;
-    case "previous":
-      method = "post";
-      break;
     case "volume":
       method = "put";
       params = { volume_percent: desiredValue };
       break;
+    case "play":
+      method = "put";
+      if (desiredValue) {
+        // return axios({
+        //   method: method,
+        //   url: `https://api.spotify.com/v1/me/player/${action}`,
+        //   params: params,
+        data = { uris: [desiredValue] };
+        //   headers: {
+        //     Authorization: `Bearer ${token}`
+        //   }
+        // });
+      }
+      break;
     default:
       method = "put";
   }
-
   return axios({
     method: method,
     url: `https://api.spotify.com/v1/me/player/${action}`,
     params: params,
+    data: data,
     headers: {
       Authorization: `Bearer ${token}`
     }
