@@ -83,7 +83,17 @@ app
       .then(response => {
         spotify.player
           .getState(response.data.access_token)
-          .then(response => res.status(200).send(response.data))
+          .then(response => {
+            switch (response.status) {
+              case 200:
+                res.status(200).send(response.data);
+                break;
+              case 204:
+                res.status(204).send();
+                break;
+              default:
+            }
+          })
           .catch(error =>
             res.status(500).send("Error getting Spotify state: " + error)
           );
@@ -99,7 +109,6 @@ app
         req.query.value
       )
         .then(response => {
-          console.log(response);
           res.send("success");
         })
         .catch(error => console.log(error));
