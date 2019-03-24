@@ -5,6 +5,8 @@ const weather = require("./weather");
 const spotify = require("./spotify");
 const express = require("express");
 const favicon = require("express-favicon");
+const newsAPI = require("newsapi");
+const newsapi = new newsAPI(process.env.NEWS_API_KEY);
 const path = require("path");
 const querystring = require("querystring");
 const bodyParser = require("body-parser");
@@ -14,9 +16,20 @@ const app = express();
 const tesla = require("./tesla");
 const spotify_redirect_uri = process.env.SPOTIFY_REDIRECT_URI;
 const spotify_client_id = process.env.SPOTIFY_CLIENT_ID;
+const tesla_client_id = process.env.TESLA_CLIENT_ID;
+const tesla_client_secret = process.env.TESLA_CLIENT_SECRET;
 const tesla_vehicle_id = process.env.TESLA_VEHICLE_ID;
-const tesla_access_token = process.env.TESLA_ACCESS_TOKEN;
 const tesla_user_agent = process.env.TESLA_USER_AGENT;
+let tesla_access_token, tesla_refresh_token;
+
+sequelize.connection.sync().then(() => {
+  db.User.findById(1)
+    .then(user => {
+      tesla_access_token = user.dataValues.tesla_access_token;
+      tesla_refresh_token = user.dataValues.tesla_refresh_token;
+    })
+    .catch(error => console.log("Error connecting to Database: ", error));
+});
 
 app.use(favicon(__dirname + "/build/favicon.ico"));
 app.use(express.static(__dirname));
@@ -24,26 +37,75 @@ app.use(express.static(path.join(__dirname, "build")));
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// db.User.create(
-//   {
-//     username: "sgladney",
-//     email: "stephengladney@gmail.com",
-//     password: "perswerd",
-//     display_name: "juju"
-//   },
-//   sequelize.preferences
-// );
-
 app
 
-  //API\
+  //API
+
+  .get("/api/news/headlines", (req, res) => {
+    newsapi.v2
+      .topHeadlines({
+        language: "en",
+        country: "us"
+      })
+      .then(response => {
+        if (response.status === "ok") {
+          res.status(200).send(response);
+        } else {
+          res.status(500).send();
+        }
+      });
+  })
   .get("/api/tesla/state/drive", (req, res) => {
     tesla.state
       .drive(tesla_access_token, tesla_user_agent, tesla_vehicle_id)
       .then(response => {
         res.send(JSON.stringify(response.data));
       })
-      .catch(error => res.send(String(error)));
+      .catch(error => {
+        if (error.response.status === 401) {
+          tesla
+            .getNewToken(
+              tesla_client_id,
+              tesla_client_secret,
+              tesla_refresh_token
+            )
+            .then(response2 => {
+              tesla_access_token = response2.data.access_token;
+              tesla_refresh_token = response2.data.refresh_token;
+              db.User.findById(1).then(user => {
+                user.update({
+                  tesla_access_token: tesla_access_token,
+                  tesla_refresh_token: tesla_refresh_token
+                });
+                tesla.state
+                  .drive(tesla_access_token, tesla_user_agent, tesla_vehicle_id)
+                  .then(response => {
+                    res.send(JSON.stringify(response.data));
+                  })
+                  .catch(error =>
+                    res
+                      .status(418)
+                      .send(
+                        "Error on second attempt to get state: " +
+                          error.response.status
+                      )
+                  );
+              });
+            })
+            .catch(error =>
+              res
+                .status(418)
+                .send("Error on getting new token: " + error.response.status)
+            );
+        } else {
+          res
+            .status(418)
+            .send(
+              "Unknown error from Tesla on initial request: " +
+                error.response.status
+            );
+        }
+      });
   })
   .get("/api/spotify/authorize", (req, res) => {
     var permissions =
@@ -140,7 +202,7 @@ app
     weather
       .getByLatLon(req.params.lat, req.params.lon)
       .then(data => {
-        res.send(JSON.stringify(data.data));
+        res.send(data.data);
       })
       .catch(e => console.log(e));
   })
