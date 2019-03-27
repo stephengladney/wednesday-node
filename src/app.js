@@ -10,6 +10,7 @@ const newsapi = new newsAPI(process.env.NEWS_API_KEY);
 const path = require("path");
 const querystring = require("querystring");
 const bodyParser = require("body-parser");
+const bcrypt = require("bcryptjs");
 const db = require("../models");
 const sequelize = require("../config/sequelize");
 const app = express();
@@ -40,7 +41,26 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app
 
   //API
-
+  .post("/api/authorize", (req, res) => {
+    console.log("auth requested");
+    const usernameSubmitted = req.query.user;
+    const pwSubmitted = req.query.password;
+    console.log(usernameSubmitted);
+    console.log(pwSubmitted);
+    db.User.findById(1).then(user => {
+      if (usernameSubmitted === user.username) {
+        bcrypt.compare(pwSubmitted, user.password, (err, resp) => {
+          if (resp) {
+            res.status(200).send();
+          } else {
+            res.status(401).send();
+          }
+        });
+      } else {
+        res.status(401).send();
+      }
+    });
+  })
   .get("/api/news/headlines", (req, res) => {
     newsapi.v2
       .topHeadlines({
