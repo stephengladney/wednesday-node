@@ -45,8 +45,6 @@ app
     console.log("auth requested");
     const usernameSubmitted = req.query.user;
     const pwSubmitted = req.query.password;
-    console.log(usernameSubmitted);
-    console.log(pwSubmitted);
     db.User.findById(1).then(user => {
       if (usernameSubmitted === user.username) {
         bcrypt.compare(pwSubmitted, user.password, (err, resp) => {

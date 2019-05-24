@@ -74,17 +74,7 @@ function playerAction(token, action, desiredValue) {
       break;
     case "play":
       method = "put";
-      if (desiredValue) {
-        // return axios({
-        //   method: method,
-        //   url: `https://api.spotify.com/v1/me/player/${action}`,
-        //   params: params,
-        data = { uris: [desiredValue] };
-        //   headers: {
-        //     Authorization: `Bearer ${token}`
-        //   }
-        // });
-      }
+      if (desiredValue) data = { uris: [desiredValue] };
       break;
     default:
       method = "put";
