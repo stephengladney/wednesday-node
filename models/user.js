@@ -16,7 +16,16 @@ const User = db.connection.define(
     password: db.Sequelize.STRING,
     display_name: {
       type: db.Sequelize.STRING,
-      unique: true
+      unique: false,
+      allowNull: false
+    },
+    tesla_access_token: {
+      type: db.Sequelize.STRING,
+      unique: false
+    },
+    tesla_refresh_token: {
+      type: db.Sequelize.STRING,
+      unique: false
     }
   },
   Object.assign({}, db.preferences, {
