@@ -23,7 +23,7 @@
     "qs": "^6.6.0",
     "querystring": "^0.2.0",
     "request": "^2.88.0",
-    "sequelize": "^4.42.0"
+    "sequelize": "^5.15.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
